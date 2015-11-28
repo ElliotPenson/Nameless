@@ -9,6 +9,7 @@ parser.py
 
 import lambda_calculus_ast
 
+
 class Parser(object):
     """An LL(1) parser that performs syntactic analysis on lambda calculus
     source code. An abstract syntax tree is provided if the given expression is
@@ -92,6 +93,7 @@ class Parser(object):
         rules of lambda calculus
         """
         return self._expression()
+
 
 class ParserError(Exception):
     """Indicates a discrepancy between what a parser expects and an actual
