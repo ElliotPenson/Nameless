@@ -28,7 +28,7 @@ class FreeVariables(ast.NodeVisitor):
 
     def visit_Abstraction(self, node):
         """FV(λx.e) = FV(e) - {x}"""
-        return self.visit(node.expression) - self.visit(node.parameter)
+        return self.visit(node.body) - self.visit(node.parameter)
 
 
 class AlphaConversion(ast.NodeVisitor):
@@ -72,3 +72,18 @@ class AlphaConversion(ast.NodeVisitor):
         self.bound_variables.remove(node.parameter.name)
         return to_return
 
+class Printer(ast.NodeVisitor):
+    """Constructs the unicode string representation of a lambda calculus
+    abstract syntax tree.
+    """
+
+    def visit_Variable(self, node):
+        return node.name
+
+    def visit_Application(self, node):
+        return u'({} {})'.format(self.visit(node.left_expression),
+                                 self.visit(node.right_expression))
+
+    def visit_Abstraction(self, node):
+        return u'λ{}.{}'.format(self.visit(node.parameter),
+                                self.visit(node.body))
