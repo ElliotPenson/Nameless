@@ -30,23 +30,27 @@ class FreeVariables(ast.NodeVisitor):
         """FV(λx.e) = FV(e) - {x}"""
         return self.visit(node.expression) - self.visit(node.parameter)
 
+
 class AlphaConversion(ast.NodeVisitor):
-    """Nondestructively substitutes all occurances of a particular variable
-    for an arbitrary expression.
+    """Nondestructively substitutes all unbound occurances of a particular
+    variable for an arbitrary expression.
 
     Attributes:
         to_return (Variable): Instance whose name attribute must match the
             variable that's being replaced
         replacement (Expression): Object inserted into the visited AST
+        bound_variables (list): All string variable names currently bound
     """
 
     def __init__(self, to_replace, replacement):
         self.to_replace = to_replace
         self.replacement = replacement
+        self.bound_variables = []
 
     def visit_Variable(self, node):
         """If the appropriate variable name is found, replace it."""
-        if node.name == self.to_replace.name:
+        if (node.name not in self.bound_variables and
+                node.name == self.to_replace.name):
             return self.replacement
         else:
             return Variable(node.name)
@@ -62,5 +66,9 @@ class AlphaConversion(ast.NodeVisitor):
         """Returns a new Abstraction after visiting both the parameter and
         body.
         """
-        return Abstraction(self.visit(node.parameter),
-                           self.visit(node.body))
+        self.bound_variables.append(node.parameter.name)
+        to_return = Abstraction(self.visit(node.parameter),
+                                self.visit(node.body))
+        self.bound_variables.remove(node.parameter.name)
+        return to_return
+
