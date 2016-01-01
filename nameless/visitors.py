@@ -9,7 +9,8 @@ visitors.py
 
 import ast
 import itertools
-import lambda_calculus_ast
+
+from lambda_calculus_ast import Variable, Application, Abstraction
 
 
 class FreeVariables(ast.NodeVisitor):
@@ -123,3 +124,42 @@ class Printer(ast.NodeVisitor):
     def visit_Abstraction(self, node):
         return u'λ{}.{}'.format(self.visit(node.parameter),
                                 self.visit(node.body))
+
+
+class BetaReduction(ast.NodeVisitor):
+    """Embodies the act of applying a function to a parameter. In operational
+    semantics, (λx.M N) → M[N/x]. This visitor provides a new abstract syntax
+    tree with a single normal order reduction performed (if possible).
+
+    Attributes:
+        reduced (bool): Indicates if a reduction took place. If this variable
+           remains false after a syntax tree is visited, the tree is in its
+           normal form.
+    """
+
+    def __init__(self):
+        self.reduced = False
+
+    def visit_Variable(self, node):
+        """Clones the given Variable node."""
+        return Variable(node.name)
+
+    def visit_Application(self, node):
+        """Performs the application if the left-hand side represents an
+        Abstraction and a reduction hasn't already taken place. Otherwise,
+        the left-hand side and right-hand side are visited (in that order).
+        """
+        if (isinstance(node.left_expression, Abstraction) and
+            not self.reduced):
+            self.reduced = True
+            converter = AlphaConversion(node.left_expression.parameter,
+                                        node.right_expression)
+            return converter.visit(node.left_expression.body)
+        else:
+            return Application(self.visit(node.left_expression),
+                               self.visit(node.right_expression))
+
+    def visit_Abstraction(self, node):
+        """Returns a new Abstraction after visiting the parameter and body."""
+        return Abstraction(self.visit(node.parameter),
+                           self.visit(node.body))
