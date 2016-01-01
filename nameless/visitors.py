@@ -8,6 +8,7 @@ visitors.py
 """
 
 import ast
+import itertools
 import lambda_calculus_ast
 
 
@@ -52,24 +53,22 @@ class BoundVariables(ast.NodeVisitor):
 
 
 class AlphaConversion(ast.NodeVisitor):
-    """Nondestructively substitutes all unbound occurances of a particular
+    """Nondestructively substitutes all free occurances of a particular
     variable for an arbitrary expression.
+
     Attributes:
         to_return (Variable): Instance whose name attribute must match the
             variable that's being replaced
         replacement (Expression): Object inserted into the visited AST
-        bound_variables (list): All string variable names currently bound
     """
 
     def __init__(self, to_replace, replacement):
         self.to_replace = to_replace
         self.replacement = replacement
-        self.bound_variables = []
 
     def visit_Variable(self, node):
         """If the appropriate variable name is found, replace it."""
-        if (node.name not in self.bound_variables and
-                node.name == self.to_replace.name):
+        if node.name == self.to_replace.name:
             return self.replacement
         else:
             return Variable(node.name)
@@ -83,13 +82,31 @@ class AlphaConversion(ast.NodeVisitor):
 
     def visit_Abstraction(self, node):
         """Returns a new Abstraction after visiting both the parameter and
-        body.
+        body. Renames the parameter if the replacement would be incorrectly
+        bound by the abstraction.
         """
-        self.bound_variables.append(node.parameter.name)
-        to_return = Abstraction(self.visit(node.parameter),
-                                self.visit(node.body))
-        self.bound_variables.remove(node.parameter.name)
-        return to_return
+        if node.parameter.name in FreeVariables().visit(self.replacement):
+            # name conflict with bound variable
+            unavailable_names = (FreeVariables().visit(node) |
+                                 {node.parameter.name})
+            new_name = next(s for s in lexicographical()
+                            if s not in unavailable_names)
+            new_parameter = Variable(new_name)
+            converter = AlphaConversion(node.parameter, new_parameter)
+            new_body = converter.visit(node.body)
+            return Abstraction(new_parameter, self.visit(new_body))
+        else:
+            return Abstraction(self.visit(node.parameter),
+                               self.visit(node.body))
+
+
+def lexicographical():
+    """All alphabetic strings in lexicographical order."""
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    for size in itertools.count(1):
+        for string in itertools.product(alphabet, repeat=size):
+            yield ''.join(string)
+
 
 class Printer(ast.NodeVisitor):
     """Constructs the unicode string representation of a lambda calculus
