@@ -31,10 +31,29 @@ class FreeVariables(ast.NodeVisitor):
         return self.visit(node.body) - self.visit(node.parameter)
 
 
+class BoundVariables(ast.NodeVisitor):
+    """A variable is bound when a surrounding abstraction defines its scope.
+    This visitor traverses a lambda calculus abstract syntax tree and provides
+    a set of all bound variable names.
+    """
+
+    def visit_Variable(self, node):
+        """BV(x) = {}"""
+        return set()
+
+    def visit_Application(self, node):
+        """BV((e1 e2)) = BV(e1) U BV(e2)"""
+        return (self.visit(node.left_expression) |
+                self.visit(node.right_expression))
+
+    def visit_Abstraction(self, node):
+        """BV(λx.e) = BV(e) U {x}"""
+        return self.visit(node.body) | {node.parameter.name}
+
+
 class AlphaConversion(ast.NodeVisitor):
     """Nondestructively substitutes all unbound occurances of a particular
     variable for an arbitrary expression.
-
     Attributes:
         to_return (Variable): Instance whose name attribute must match the
             variable that's being replaced
