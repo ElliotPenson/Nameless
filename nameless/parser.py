@@ -7,7 +7,7 @@ parser.py
 @author ejnp
 """
 
-import lambda_calculus_ast
+from lambda_calculus_ast import Variable, Application, Abstraction
 
 
 class Parser(object):
@@ -48,12 +48,12 @@ class Parser(object):
         expression is an application, abstraction, or variable"""
         if self.token.type == '(':
             return self._application()
-        elif self.token.type == u'λ':
+        elif self.token.type in [u'λ', '@']:
             return self._abstraction()
         elif self.token.type == 'SYMBOL':
             return self._variable()
         else:
-            self._error(u'(, λ, or SYMBOL')
+            self._error(u'(, λ, @, or SYMBOL')
 
     def _variable(self):
         """Returns an instance of Variable if the current token is a symbol"""
@@ -80,13 +80,13 @@ class Parser(object):
     def _abstraction(self):
         """Returns an instance of Abstraction if the next series of tokens
         fits the form of a lambda calculus function"""
-        if self.token.type == u'λ':
+        if self.token.type in [u'λ', '@']:
             self._advance()
             variable = self._variable()
             self._eat('.')
             return Abstraction(variable, self._expression())
         else:
-            self._error(u'λ')
+            self._error(u'λ or @')
 
     def parse(self):
         """Returns an abstract syntax tree if the source correctly fits the
@@ -105,7 +105,7 @@ class ParserError(Exception):
     """
 
     def __init__(self, expected, found):
-        message = 'Expected: {}, Found: {}'.format(expected, found)
+        message = u'Expected: {}, Found: {}'.format(expected, found)
         super(ParserError, self).__init__(message)
         self.expected = expected
         self.found = found

@@ -8,9 +8,10 @@ lexer.py
 """
 
 import string
+
 from collections import namedtuple
 
-PUNCTUATION = [u'λ', '.', '(', ')']
+PUNCTUATION = [u'λ', '@', '.', '(', ')']
 WHITESPACE = list(string.whitespace)
 
 Token = namedtuple('Token', ['type', 'value'])
