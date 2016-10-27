@@ -1,4 +1,4 @@
-# nameless!
+# Nameless!
 
 A lambda calculus interpreter written in Python. Lambda calculus is a
 minimal, turing complete programming language. In lambda calculus,
