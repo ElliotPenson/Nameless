@@ -10,7 +10,7 @@ visitors.py
 import ast
 import itertools
 
-from lambda_calculus_ast import Variable, Application, Abstraction
+from nameless.lambda_calculus_ast import Variable, Application, Abstraction
 
 
 class FreeVariables(ast.NodeVisitor):

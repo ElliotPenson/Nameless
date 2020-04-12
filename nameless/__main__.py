@@ -6,10 +6,9 @@ main.py
 
 @author ejnp
 """
-
-from lexer import Lexer
-from parser import Parser, ParserError
-from visitors import BetaReduction
+from nameless.lexer import Lexer
+from nameless.parser import Parser, ParserError
+from nameless.visitors import BetaReduction
 
 
 def interpret(input_string, print_reductions=False):
@@ -20,7 +19,7 @@ def interpret(input_string, print_reductions=False):
     try:
         ast = Parser(lexer).parse()
     except ParserError as discrepancy:
-        print 'ParseError: ' + discrepancy.message
+        print('ParseError: ' + str(discrepancy))
         return None
     normal_form = False
     while not normal_form:
@@ -28,16 +27,16 @@ def interpret(input_string, print_reductions=False):
         reduced_ast = reducer.visit(ast)
         normal_form = not reducer.reduced
         if print_reductions:
-            print unicode(ast)
+            print(str(ast))
         ast = reduced_ast
-    return unicode(ast)
+    return str(ast)
 
 
 def main():
     """Begins an interactive lambda calculus interpreter"""
-    print "nameless!\nType 'quit' to exit."
+    print("nameless!\nType 'quit' to exit.")
     while True:
-        read = raw_input('> ').decode('utf-8')
+        read = input('> ')
         if read == 'quit':
             break
         if read != '':

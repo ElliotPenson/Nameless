@@ -7,7 +7,7 @@ parser.py
 @author ejnp
 """
 
-from lambda_calculus_ast import Variable, Application, Abstraction
+from nameless.lambda_calculus_ast import Variable, Application, Abstraction
 
 
 class Parser(object):
