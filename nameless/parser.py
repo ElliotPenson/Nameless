@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
 """
@@ -22,7 +22,7 @@ class Parser(object):
 
     def __init__(self, lexer):
         self.lexer = lexer
-        self.token = self.lexer.next()
+        self.token = next(self.lexer)
 
     def _error(self, expected):
         """Raises a ParserError that compares an expected token type and the
@@ -32,7 +32,7 @@ class Parser(object):
 
     def _advance(self):
         """Moves to the next token"""
-        self.token = self.lexer.next()
+        self.token = next(self.lexer)
 
     def _eat(self, prediction):
         """Advances through the source but only if type of the next token
@@ -48,7 +48,7 @@ class Parser(object):
         expression is an application, abstraction, or variable"""
         if self.token.type == '(':
             return self._application()
-        elif self.token.type in [u'λ', '@']:
+        elif self.token.type in 'λ@':
             return self._abstraction()
         elif self.token.type == 'SYMBOL':
             return self._variable()
@@ -80,13 +80,13 @@ class Parser(object):
     def _abstraction(self):
         """Returns an instance of Abstraction if the next series of tokens
         fits the form of a lambda calculus function"""
-        if self.token.type in [u'λ', '@']:
+        if self.token.type in 'λ@':
             self._advance()
             variable = self._variable()
             self._eat('.')
             return Abstraction(variable, self._expression())
         else:
-            self._error(u'λ or @')
+            self._error('λ or @')
 
     def parse(self):
         """Returns an abstract syntax tree if the source correctly fits the
@@ -105,7 +105,7 @@ class ParserError(Exception):
     """
 
     def __init__(self, expected, found):
-        message = u'Expected: {}, Found: {}'.format(expected, found)
+        message = f'Expected: {expected}, Found: {found}'
         super(ParserError, self).__init__(message)
         self.expected = expected
         self.found = found

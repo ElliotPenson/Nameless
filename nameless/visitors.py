@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
 """
@@ -9,6 +9,7 @@ visitors.py
 
 import ast
 import itertools
+from string import ascii_lowercase as alphabet
 
 from nameless.lambda_calculus_ast import Variable, Application, Abstraction
 
@@ -54,11 +55,11 @@ class BoundVariables(ast.NodeVisitor):
 
 
 class AlphaConversion(ast.NodeVisitor):
-    """Nondestructively substitutes all free occurances of a particular
-    variable for an arbitrary expression.
+    """Non-destructively substitutes all free occurrences of a particular
+    variable in an arbitrary expression.
 
     Attributes:
-        to_return (Variable): Instance whose name attribute must match the
+        to_replace (Variable): Instance whose name attribute must match the
             variable that's being replaced
         replacement (Expression): Object inserted into the visited AST
     """
@@ -103,7 +104,6 @@ class AlphaConversion(ast.NodeVisitor):
 
 def lexicographical():
     """All alphabetic strings in lexicographical order."""
-    alphabet = 'abcdefghijklmnopqrstuvwxyz'
     for size in itertools.count(1):
         for string in itertools.product(alphabet, repeat=size):
             yield ''.join(string)
