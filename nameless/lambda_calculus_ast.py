@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
 """
@@ -8,7 +8,7 @@ lexer.py
 """
 
 
-class Expression(object):
+class Expression:
     """Abstract class for any lambda calculus expression."""
 
     def children(self):
@@ -46,7 +46,7 @@ class Application(Expression):
         self.right_expression = right_expression
 
     def __str__(self):
-        return u'({} {})'.format(self.left_expression, self.right_expression)
+        return f'({self.left_expression} {self.right_expression})'
 
     def children(self):
         return [self.left_expression, self.right_expression]
@@ -65,7 +65,7 @@ class Abstraction(Expression):
         self.body = body
 
     def __str__(self):
-        return u'λ{}.{}'.format(self.parameter, self.body)
+        return f'λ{self.parameter}.{self.body}'
 
     def children(self):
         return [self.parameter, self.body]

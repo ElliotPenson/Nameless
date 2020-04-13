@@ -22,7 +22,7 @@ project has no dependencies outside of the standard library.
 3. Run the `nameless` package:
 
     ```
-    python nameless
+    python3 -m nameless
     ```
 
 ## Grammar
