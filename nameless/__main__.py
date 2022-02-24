@@ -7,12 +7,14 @@ main.py
 @author ejnp
 """
 
+import sys
+
 from nameless.lexer import Lexer
 from nameless.parser import Parser, ParserError
 from nameless.visitors import BetaReduction
 
 
-def interpret(input_string, print_reductions=False):
+def interpret(input_string, print_reductions=False, lazy=False):
     """Performs normal order reduction on the given string lambda calculus
     expression. Returns the expression's normal form if it exists.
     """
@@ -25,7 +27,7 @@ def interpret(input_string, print_reductions=False):
         return
     normal_form = False
     while not normal_form:
-        reducer = BetaReduction()
+        reducer = BetaReduction(lazy)
         reduced_ast = reducer.visit(ast)
         normal_form = not reducer.reduced
         if print_reductions:
@@ -42,7 +44,7 @@ def main():
         if read == 'quit':
             break
         if read != '':
-            interpret(read, print_reductions=True)
+            interpret(read, print_reductions=True, lazy='-l' in sys.argv or '--lazy' in sys.argv)
 
 
 if __name__ == '__main__':

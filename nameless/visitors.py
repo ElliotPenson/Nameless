@@ -133,10 +133,12 @@ class BetaReduction(ast.NodeVisitor):
         reduced (bool): Indicates if a reduction took place. If this variable
            remains false after a syntax tree is visited, the tree is in its
            normal form.
+        lazy (bool): Whether to use a lazy or eager evaluation strategy
     """
 
-    def __init__(self):
+    def __init__(self, lazy=False):
         self.reduced = False
+        self.lazy = lazy
 
     def visit_Variable(self, node):
         """Clones the given Variable node."""
@@ -145,7 +147,8 @@ class BetaReduction(ast.NodeVisitor):
     def visit_Application(self, node):
         """Performs the application if the left-hand side represents an
         Abstraction and a reduction hasn't already taken place. Otherwise,
-        the left-hand side and right-hand side are visited (in that order).
+        the left-hand side is visited and, if eager, the right-hand side is
+        visited (in that order).
         """
         if (isinstance(node.left_expression, Abstraction) and
             not self.reduced):
@@ -155,9 +158,10 @@ class BetaReduction(ast.NodeVisitor):
             return converter.visit(node.left_expression.body)
         else:
             return Application(self.visit(node.left_expression),
-                               self.visit(node.right_expression))
+                               node.right_expression if self.lazy else self.visit(node.right_expression))
 
     def visit_Abstraction(self, node):
-        """Returns a new Abstraction after visiting the parameter and body."""
+        """Returns a new Abstraction after visiting the parameter and,
+        if eager, body."""
         return Abstraction(self.visit(node.parameter),
-                           self.visit(node.body))
+                           node.body if self.lazy else self.visit(node.body))
