@@ -67,6 +67,7 @@ class AlphaConversion(ast.NodeVisitor):
     def __init__(self, to_replace, replacement):
         self.to_replace = to_replace
         self.replacement = replacement
+        self.unavailable_names = set()
 
     def visit_Variable(self, node):
         """If the appropriate variable name is found, replace it."""
@@ -87,15 +88,29 @@ class AlphaConversion(ast.NodeVisitor):
         body. Renames the parameter if the replacement would be incorrectly
         bound by the abstraction.
         """
-        if node.parameter.name in FreeVariables().visit(self.replacement):
+
+        # Test cases:
+        # (λf.(λx.(f (x x)) λx.(f (x x))) λq.λw.w)
+        # (λx.λq.λw.x λq.λw.w)
+        # (λa.λb.a λb.b)
+        # (λa.λb.a λc.λb.b)
+
+        replacement_bound_variables = BoundVariables().visit(self.replacement)
+
+        if node.parameter.name in (self.unavailable_names |
+                                   FreeVariables().visit(self.replacement) |
+                                   replacement_bound_variables):
             # name conflict with bound variable
-            unavailable_names = (FreeVariables().visit(node) |
-                                 {node.parameter.name})
+            unavailable_names = (self.unavailable_names |
+                                 FreeVariables().visit(node) |
+                                 {node.parameter.name} |
+                                 replacement_bound_variables)
             new_name = next(s for s in lexicographical()
                             if s not in unavailable_names)
             new_parameter = Variable(new_name)
             converter = AlphaConversion(node.parameter, new_parameter)
             new_body = converter.visit(node.body)
+            self.unavailable_names.add(new_name)
             return Abstraction(new_parameter, self.visit(new_body))
         else:
             return Abstraction(self.visit(node.parameter),
