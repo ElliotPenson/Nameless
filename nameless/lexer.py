@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
 """
@@ -7,12 +7,10 @@ lexer.py
 @author ejnp
 """
 
-import string
-
+from string import whitespace as WHITESPACE
 from collections import namedtuple
 
-PUNCTUATION = [u'λ', '@', '.', '(', ')']
-WHITESPACE = list(string.whitespace)
+PUNCTUATION = 'λ@.()'
 
 Token = namedtuple('Token', ['type', 'value'])
 
@@ -34,7 +32,7 @@ class Lexer(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Returns the next lexeme as a Token object."""
         self._clear_whitespace()
         if self.position > self.size:
@@ -57,5 +55,5 @@ class Lexer(object):
     def _clear_whitespace(self):
         """Advances position past any whitespace."""
         while (self.position < self.size and
-               self.source[self.position] in string.whitespace):
+               self.source[self.position] in WHITESPACE):
             self.position += 1
